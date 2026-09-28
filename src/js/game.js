@@ -23,7 +23,7 @@ function createGame() {
   let dots = 0;
   for ( const row of grid ) for ( const v of row ) if ( v === 2 ) dots++;
 
-  return {
+  const game = {
     state: 'start',
     score: 0,
     lives: 3,
@@ -43,7 +43,13 @@ function createGame() {
       speed: GHOST_SPEED,
       kind: g.kind,
     } ) ),
+    releaseTimer: 0,
   };
+
+  // El estado de salida de los fantasmas y el reloj los fija resetPositions,
+  // el mismo sitio que los repone al perder una vida.
+  resetPositions( game );
+  return game;
 }
 
 function aligned( v ) {
@@ -155,6 +161,18 @@ function moveGhost( game, g ) {
   wrapTunnel( g, width );
 }
 
+// Reloj de la pen: cada GHOST_RELEASE_FRAMES frames se abre paso al siguiente.
+// El primero ya sale en t=0, porque resetPositions lo deja activo; este reloj
+// solo cuenta los siguientes.
+function releaseGhost( game ) {
+  game.releaseTimer++;
+  if ( game.releaseTimer < GHOST_RELEASE_FRAMES ) return;
+  game.releaseTimer = 0;
+  // Con la pen ya vacia el reloj sigue contando, pero no hay a quien sacar.
+  const next = game.ghosts.find( ( g ) => g.state === 'pen' );
+  if ( next ) next.state = 'active';
+}
+
 function resetPositions( game ) {
   const p = game.pacman;
   p.x = PACMAN_START.x;
@@ -165,7 +183,10 @@ function resetPositions( game ) {
     g.x = GHOST_STARTS[ i ].x;
     g.y = GHOST_STARTS[ i ].y;
     g.dir = 'up';
+    // Solo el primero arranca activo; el resto espera su turno en el reloj.
+    g.state = i === 0 ? 'active' : 'pen';
   } );
+  game.releaseTimer = 0;
 }
 
 function collides( a, b ) {
@@ -174,7 +195,11 @@ function collides( a, b ) {
 
 function update( game ) {
   movePacman( game );
-  game.ghosts.forEach( ( g ) => moveGhost( game, g ) );
+  releaseGhost( game );
+  // Un fantasma en la pen se dibuja pero no se mueve: espera su turno.
+  game.ghosts.forEach( ( g ) => {
+    if ( g.state === 'active' ) moveGhost( game, g );
+  } );
 
   for ( const g of game.ghosts ) {
     if ( collides( game.pacman, g ) ) {
