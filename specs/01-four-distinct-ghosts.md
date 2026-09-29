@@ -1,6 +1,6 @@
 # SPEC 01 — Four ghosts with distinct behaviors
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** — (first spec in the repo)
 > **Date:** 2026-09-28
 > **Objective:** Give the game four ghosts, each with a different targeting behavior, released one at a time from the pen.
