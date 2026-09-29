@@ -50,6 +50,13 @@ function parseTile( ch ) {
 const MAZE = MAZE_STR.map( ( row ) => row.split( '' ).map( parseTile ) );
 
 const TUNNEL_ROW = 14;
+// La pen se define con estas cajas; si editas las filas de MAZE_STR
+// que forman la pen, actualizalas aqui tambien.
+const PEN_BOX = { x0: 11, x1: 17, y0: 12, y1: 15 }; // incluye la fila de la puerta
+const PEN_EXIT = { x: 13, y: 11 };                  // celda transitable justo encima de la puerta
+function isInPen( x, y ) {
+  return x >= PEN_BOX.x0 && x <= PEN_BOX.x1 && y >= PEN_BOX.y0 && y <= PEN_BOX.y1;
+}
 const PACMAN_START = { x: 13, y: 23 };
 // 4 fantasmas. El orden del array es tambien el orden de salida de la pen:
 // reordenarlo cambia la dificultad del nivel sin tocar ningun otro archivo.
@@ -62,5 +69,8 @@ const GHOST_STARTS = [
 
 window.MAZE = MAZE;
 window.TUNNEL_ROW = TUNNEL_ROW;
+window.PEN_BOX = PEN_BOX;
+window.PEN_EXIT = PEN_EXIT;
+window.isInPen = isInPen;
 window.PACMAN_START = PACMAN_START;
 window.GHOST_STARTS = GHOST_STARTS;
