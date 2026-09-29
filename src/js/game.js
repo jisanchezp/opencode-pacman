@@ -44,6 +44,7 @@ function createGame() {
       kind: g.kind,
     } ) ),
     releaseTimer: 0,
+    releasedCount: 1,
   };
 
   // El estado de salida de los fantasmas y el reloj los fija resetPositions,
@@ -76,6 +77,8 @@ function canMove( grid, x, y, dir, actor ) {
   const ty = y + d.y;
   // Tunel: salir por un borde en la fila del tunel siempre es valido.
   if ( ty === TUNNEL_ROW && ( tx < 0 || tx >= grid[ 0 ].length ) ) return true;
+  // Puerta del pen: unidireccional para los fantasmas (solo hacia fuera).
+  if ( actor === 'ghost' && grid[ ty ][ tx ] === 3 && d.y !== -1 ) return false;
   return !isWall( grid, tx, ty, actor );
 }
 
@@ -159,6 +162,7 @@ function moveGhost( game, g ) {
   g.x += d.x * g.speed;
   g.y += d.y * g.speed;
   wrapTunnel( g, width );
+  if ( !isInPen( g.x, g.y ) ) g.state = 'active';
 }
 
 // Reloj de la pen: cada GHOST_RELEASE_FRAMES frames se abre paso al siguiente.
@@ -168,9 +172,7 @@ function releaseGhost( game ) {
   game.releaseTimer++;
   if ( game.releaseTimer < GHOST_RELEASE_FRAMES ) return;
   game.releaseTimer = 0;
-  // Con la pen ya vacia el reloj sigue contando, pero no hay a quien sacar.
-  const next = game.ghosts.find( ( g ) => g.state === 'pen' );
-  if ( next ) next.state = 'active';
+  if ( game.releasedCount < game.ghosts.length ) game.releasedCount++;
 }
 
 function resetPositions( game ) {
@@ -183,9 +185,9 @@ function resetPositions( game ) {
     g.x = GHOST_STARTS[ i ].x;
     g.y = GHOST_STARTS[ i ].y;
     g.dir = 'up';
-    // Solo el primero arranca activo; el resto espera su turno en el reloj.
-    g.state = i === 0 ? 'active' : 'pen';
+    g.state = 'pen';
   } );
+  game.releasedCount = 1;
   game.releaseTimer = 0;
 }
 
@@ -197,8 +199,8 @@ function update( game ) {
   movePacman( game );
   releaseGhost( game );
   // Un fantasma en la pen se dibuja pero no se mueve: espera su turno.
-  game.ghosts.forEach( ( g ) => {
-    if ( g.state === 'active' ) moveGhost( game, g );
+  game.ghosts.forEach( ( g, i ) => {
+    if ( i < game.releasedCount ) moveGhost( game, g );
   } );
 
   for ( const g of game.ghosts ) {

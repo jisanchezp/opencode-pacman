@@ -66,6 +66,7 @@ const TARGET_FN = {
 // Un kind desconocido persigue directo: es la regla por defecto del juego y
 // evita que getTarget devuelva undefined.
 function getTarget( game, g ) {
+  if ( g.state === 'pen' ) return PEN_EXIT;
   return ( TARGET_FN[ g.kind ] || hunterTarget )( game, g );
 }
 
