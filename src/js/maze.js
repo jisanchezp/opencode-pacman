@@ -51,9 +51,13 @@ const MAZE = MAZE_STR.map( ( row ) => row.split( '' ).map( parseTile ) );
 
 const TUNNEL_ROW = 14;
 const PACMAN_START = { x: 13, y: 23 };
+// 4 fantasmas. El orden del array es tambien el orden de salida de la pen:
+// reordenarlo cambia la dificultad del nivel sin tocar ningun otro archivo.
 const GHOST_STARTS = [
-  { x: 13, y: 14, kind: 'hunter' }, // dentro de la pen
-  { x: 14, y: 14, kind: 'random' }, // dentro de la pen
+  { x: 13, y: 14, kind: 'hunter' },   // el primero en salir
+  { x: 14, y: 14, kind: 'ambusher' },
+  { x: 13, y: 15, kind: 'flanker' },
+  { x: 14, y: 15, kind: 'shy' },
 ];
 
 window.MAZE = MAZE;
